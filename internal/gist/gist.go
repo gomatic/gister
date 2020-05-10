@@ -62,7 +62,7 @@ func Public(public bool) func(*options) {
 
 //
 func Credentials(token string) func(*options) {
-	parts := strings.Split(string(token), ":")
+	parts := strings.Split(strings.TrimSpace(token), ":")
 	return func(options *options) {
 		if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
 			return

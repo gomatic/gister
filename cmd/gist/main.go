@@ -12,7 +12,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/gomatic/gister/internal/gist"
 )
@@ -63,15 +62,22 @@ func main() {
 		log.Fatalln("incompatible: private and anonymous")
 	}
 
-	token, err := ioutil.ReadFile(configFile)
-	if err != nil && !anonymous {
-		log.Fatalf("no token. %s: %s", configFile, err)
+	var token string
+	if !anonymous {
+		token = os.Getenv("GITHUB_TOKEN")
+		if token == "" {
+			tokenBytes, err := ioutil.ReadFile(configFile)
+			if err != nil {
+				log.Fatalf("no token. %s: %s", configFile, err)
+			}
+			token = string(tokenBytes)
+		}
 	}
 
 	gister, err := gist.New(
 		gist.Anonymous(anonymous),
 		gist.MustFiles(flag.Args()...), // TODO support stdin
-		gist.Credentials(strings.TrimSpace(string(token))),
+		gist.Credentials(token),
 		gist.Description(description),
 		gist.Public(public),
 		gist.GistId(update),
